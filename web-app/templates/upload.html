@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Music Upload</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #fff;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    label {
+      font-weight: bold;
+      color: #555;
+    }
+    input[type="text"], input[type="file"], button {
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+    input[type="submit"] {
+      padding: 12px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    input[type="submit"]:hover {
+      background-color: #0056b3;
+    }
+    #record-controls {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    #recording-status {
+      font-size: 14px;
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Upload or Record Music</h1>
+    <form action="/upload" method="POST" enctype="multipart/form-data">
+      <label for="music-name">Music Name:</label>
+      <input type="text" id="music-name" name="music_name" placeholder="Enter the name of the music" required>
+
+      <label for="author">Author:</label>
+      <input type="text" id="author" name="author" placeholder="Enter the author's name" required>
+
+      <label for="music-file">Upload Music File:</label>
+      <input type="file" id="music-file" name="music_file" accept=".mp3,.wav,.ogg">
+
+      <label>Or Record Audio:</label>
+      <div id="record-controls">
+        <button type="button" id="start-recording">Start Recording</button>
+        <button type="button" id="stop-recording" disabled>Stop Recording</button>
+        <span id="recording-status"></span>
+      </div>
+      <audio id="audio-preview" controls hidden></audio>
+      <input type="hidden" id="recorded-audio" name="recorded_audio">
+      
+      <input type="submit" value="Submit">
+    </form>
+  </div>
+
+  <script>
+    const startButton = document.getElementById('start-recording');
+    const stopButton = document.getElementById('stop-recording');
+    const recordingStatus = document.getElementById('recording-status');
+    const audioPreview = document.getElementById('audio-preview');
+    const recordedAudioInput = document.getElementById('recorded-audio');
+
+    let mediaRecorder;
+    let audioChunks = [];
+
+    startButton.addEventListener('click', async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+
+        mediaRecorder.ondataavailable = event => {
+          audioChunks.push(event.data);
+        };
+
+        mediaRecorder.onstop = () => {
+          const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+          const audioURL = URL.createObjectURL(audioBlob);
+          audioPreview.src = audioURL;
+          audioPreview.hidden = false;
+
+          // Convert the audio blob to a Base64 string to send via the form
+          const reader = new FileReader();
+          reader.readAsDataURL(audioBlob);
+          reader.onloadend = () => {
+            recordedAudioInput.value = reader.result;
+          };
+        };
+
+        mediaRecorder.start();
+        startButton.disabled = true;
+        stopButton.disabled = false;
+        recordingStatus.textContent = "Recording...";
+      } catch (error) {
+        console.error('Error accessing microphone:', error);
+      }
+    });
+
+    stopButton.addEventListener('click', () => {
+      mediaRecorder.stop();
+      startButton.disabled = false;
+      stopButton.disabled = true;
+      recordingStatus.textContent = "Recording stopped.";
+    });
+  </script>
+</body>
+</html>
+
