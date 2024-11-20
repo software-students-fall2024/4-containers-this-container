@@ -5,7 +5,7 @@ This module includes functions to download or load the model, make inferences
 with the model, and parse the inference result and output the model's prediction.
 """
 
-from pymongo import MongoClient
+# from pymongo import MongoClient
 from transformers import pipeline
 
 
@@ -17,7 +17,8 @@ def download_model():
     Returns:
         None
     """
-    pipe = pipeline("audio-classification", model="leo-kwan/wav2vec2-base-100k-gtzan-music-genres-finetuned-gtzan")
+    pipe = pipeline("audio-classification", \
+                    model="leo-kwan/wav2vec2-base-100k-gtzan-music-genres-finetuned-gtzan")
     pipe.save_pretrained("model")
 
 
@@ -65,7 +66,7 @@ def main(audio_file):
     result = []
     try:
         result = inference(audio_file)
-    except:
+    except Exception as _:
         download_model()
         result = inference(audio_file)
     pred = parse_result(result)
