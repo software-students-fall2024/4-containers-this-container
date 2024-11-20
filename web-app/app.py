@@ -1,3 +1,7 @@
+"""
+Dub dub
+"""
+
 from flask import Flask, render_template
 from pymongo import MongoClient
 
@@ -5,6 +9,12 @@ app = Flask(__name__)
 
 @app.route("/")
 def index():
+    """
+    Lorem ipsum
+
+    Returns:
+        something: haha
+    """
     client = MongoClient("mongodb://mongodb:27017/")
     db = client.ml_data
     results = db.results.find()
