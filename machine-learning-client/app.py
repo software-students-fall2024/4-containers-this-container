@@ -63,12 +63,8 @@ def main(audio_file):
     Args:
         image_path (str): Path to the input image.
     """
-    result = []
-    try:
-        result = inference(audio_file)
-    except Exception as _:
-        download_model()
-        result = inference(audio_file)
+    download_model()
+    result = inference(audio_file)
     pred = parse_result(result)
     print(f"The genre of your music is: {pred}.")
 
