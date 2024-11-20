@@ -1,3 +1,6 @@
+# Downloaded model directory
+machine-learning-client/model/
+
 # mac junk
 .DS_Store
 
