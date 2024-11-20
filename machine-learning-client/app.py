@@ -19,7 +19,7 @@ def download_model():
     """
     pipe = pipeline(
         "audio-classification",
-        model="leo-kwan/wav2vec2-base-100k-gtzan-music-genres-finetuned-gtzan"
+        model="leo-kwan/wav2vec2-base-100k-gtzan-music-genres-finetuned-gtzan",
     )
     pipe.save_pretrained("model")
 
