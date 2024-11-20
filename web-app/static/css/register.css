@@ -1,0 +1,126 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f2f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+#errorMessage {
+    color: red;
+    font-size: 0.9rem;
+    margin-top: -15px; /* Adjust margin to tighten space */
+    margin-bottom: 15px;
+    text-align: left; /* Align error with form elements */
+}
+
+form {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 90%;
+    max-width: 300px;
+    text-align: center;
+}
+
+label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+    text-align: left;
+}
+
+input, a {
+    box-sizing: border-box;
+}
+
+.button-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;  /* Space between buttons */
+}
+
+input[type="text"],
+input[type="password"] {
+    width: calc(100% - 20px);
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+input[type="submit"] {
+    background-color: #f7dc6f;
+    color: black;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+    font-size: 1rem;
+    transition: background-color 0.3s;
+}
+
+input[type="submit"]:hover {
+    background-color: #FAD5A5;
+}
+
+input[type="submit"],
+#register {
+    background-color: #f7dc6f;
+    color: black;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;  /* Force same width */
+    text-align: center;
+    display: block;
+    font-size: 1rem;
+    font-weight: bold;
+    text-decoration: none;
+    transition: background-color 0.3s;
+    border: none;
+}
+
+input[type="submit"]:hover,
+#register:hover {
+    background-color: #FAD5A5;
+}
+
+
+#errorMessage {
+    color: red;
+    font-size: 0.9rem;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+/* Mobile-specific adjustments */
+@media (max-width: 480px) {
+    form {
+        padding: 15px;
+    }
+
+    input[type="text"],
+    input[type="password"] {
+        width: calc(100% - 10px);
+        padding: 8px;
+    }
+
+    input[type="submit"] {
+        padding: 8px 10px;
+        font-size: 0.9rem;
+    }
+
+    label {
+        font-size: 0.9rem;
+    }
+
+    #register {
+        font-size: 0.9rem;
+    }
+}
