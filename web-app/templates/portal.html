@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% block head %}
+    <title> Song Recommendations and Statistics </title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+            
+        th,td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+            font-size: 14px;
+            padding: 3px;
+        }
+            
+        thead th {
+            background-color: #ffffff;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+    </style>
+{% endblock %}
+
+{% block container %}
+    <h1>Song Portal</h1>
+
+    <!-- Song Recommendation Table -->
+    <section>
+        <h2> Recommendated for you</h2>
+        <table id="recommendations"> 
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Artist</th>
+                    <th>Genre</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for song in recommendations %}
+                <tr>
+                    <td>{{ song["Title"] }}</td>
+                    <td>{{ song["Author"] }}</td>
+                    <td>{{ song["Genre"] }}</td>
+                </tr> 
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+    
+    <!-- Statistics Table -->
+    <section>
+        <h2>Statistics</h2>
+        <table id="statistics">
+            <thead>
+                <tr>
+                    <th>Genre</th>
+                    <th># of Songs</th>
+                    <th>Percentage(%)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for genre in genres}
+                <tr>
+                    <td>{{ genre["Name"] }}</td>
+                    <td>{{ genre["Amount"] }}</td>
+                    <td>{{ genre["Percentage"] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+{% endblock %}
