@@ -1,3 +1,5 @@
 pymongo
 numpy
 flask
+flask-login
+transformers
