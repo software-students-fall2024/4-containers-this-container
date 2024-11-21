@@ -18,8 +18,8 @@ numpy = "*"
 torch = "*"
 transformers = "*"
 bson = "*"
+pytest = "*"
 
 [dev-packages]
-pytest = "*"
 
 [requires]
