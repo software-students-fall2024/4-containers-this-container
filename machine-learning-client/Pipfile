@@ -17,6 +17,7 @@ werkzeug = "*"
 numpy = "*"
 torch = "*"
 transformers = "*"
+pydub = "*"
 
 
 [dev-packages]

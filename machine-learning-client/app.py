@@ -5,11 +5,11 @@ This module includes functions to download or load the model, make inferences
 with the model, and parse the inference result and output the model's prediction.
 """
 
+import base64
 # from pymongo import MongoClient
 from transformers import pipeline
 from flask import Flask, request, jsonify
 from pydub import AudioSegment
-import base64
 
 app = Flask(__name__)
 
@@ -101,7 +101,7 @@ def classify_api():
     """
     audio_json = request.get_json()
     audio_data = audio_json.get("audio")
-    raw_audio = base64.b64decode(base64_audio_data.split(",")[1])
+    raw_audio = base64.b64decode(audio_data.split(",")[1])
     result = predict(raw_audio)
     return jsonify(result)
 
