@@ -1,63 +1,109 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Music Upload</title>
   <style>
+    input, a {
+      box-sizing: border-box;
+    }
+
     body {
       font-family: Arial, sans-serif;
-      background-color: #f9f9f9;
+      background-color: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
       margin: 0;
-      padding: 0;
     }
+
     .container {
-      max-width: 600px;
-      margin: 50px auto;
+      background-color: #ffffff;
       padding: 20px;
-      background: #fff;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      border-radius: 8px;
-    }
-    h1 {
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      width: 90%;
+      max-width: 400px;
       text-align: center;
-      color: #333;
     }
+
+    h1 {
+      color: #333;
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+    }
+
     form {
       display: flex;
       flex-direction: column;
       gap: 15px;
     }
+
     label {
+      display: block;
       font-weight: bold;
-      color: #555;
+      margin-bottom: 5px;
+      text-align: left;
     }
-    input[type="text"], input[type="file"], button {
+
+    input[type="text"], input[type="file"] {
+      width: calc(100% - 20px);
       padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 16px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 1rem;
     }
-    input[type="submit"] {
-      padding: 12px;
-      background-color: #007BFF;
-      color: white;
+
+    input[type="submit"], button {
+      background-color: #f7dc6f;
+      color: black;
+      padding: 10px 15px;
       border: none;
-      border-radius: 4px;
-      font-size: 16px;
+      border-radius: 5px;
       cursor: pointer;
+      font-size: 1rem;
+      transition: background-color 0.3s;
     }
-    input[type="submit"]:hover {
-      background-color: #0056b3;
+
+    input[type="submit"]:hover, button:hover {
+      background-color: #FAD5A5;
     }
+
     #record-controls {
       display: flex;
+      flex-direction: column;
       gap: 10px;
       align-items: center;
     }
+
     #recording-status {
-      font-size: 14px;
       color: red;
+      font-size: 0.9rem;
+      margin-top: 10px;
+    }
+
+    audio {
+      margin-top: 10px;
+      width: 100%;
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 15px;
+      }
+      input[type="text"], input[type="file"] {
+        width: calc(100% - 10px);
+        padding: 8px;
+      }
+      input[type="submit"] {
+        padding: 8px 10px;
+        font-size: 0.9rem;
+      }
+      label {
+        font-size: 0.9rem;
+      }
     }
   </style>
 </head>
@@ -82,60 +128,67 @@
       </div>
       <audio id="audio-preview" controls hidden></audio>
       <input type="hidden" id="recorded-audio" name="recorded_audio">
-      
+
       <input type="submit" value="Submit">
     </form>
   </div>
+<script>
 
-  <script>
-    const startButton = document.getElementById('start-recording');
-    const stopButton = document.getElementById('stop-recording');
-    const recordingStatus = document.getElementById('recording-status');
-    const audioPreview = document.getElementById('audio-preview');
-    const recordedAudioInput = document.getElementById('recorded-audio');
+	const startButton = document.getElementById('start-recording');
+        const stopButton = document.getElementById('stop-recording');
+        const recordingStatus = document.getElementById('recording-status');
+        const audioPreview = document.getElementById('audio-preview');
+        const recordedAudioInput = document.getElementById('recorded-audio');
 
-    let mediaRecorder;
-    let audioChunks = [];
+        let mediaRecorder;
+        let audioChunks = [];
+	let recordingTimeout;
+        startButton.addEventListener('click', async () => {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
 
-    startButton.addEventListener('click', async () => {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder.ondataavailable = event => {
+                    audioChunks.push(event.data);
+                };
 
-        mediaRecorder.ondataavailable = event => {
-          audioChunks.push(event.data);
-        };
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    const audioURL = URL.createObjectURL(audioBlob);
+                    audioPreview.src = audioURL;
+                    audioPreview.hidden = false;
 
-        mediaRecorder.onstop = () => {
-          const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-          const audioURL = URL.createObjectURL(audioBlob);
-          audioPreview.src = audioURL;
-          audioPreview.hidden = false;
+                    const reader = new FileReader();
+                    reader.readAsDataURL(audioBlob);
+                    reader.onloadend = () => {
+                        recordedAudioInput.value = reader.result;
+                    };
+                };
 
-          // Convert the audio blob to a Base64 string to send via the form
-          const reader = new FileReader();
-          reader.readAsDataURL(audioBlob);
-          reader.onloadend = () => {
-            recordedAudioInput.value = reader.result;
-          };
-        };
+                mediaRecorder.start();
+                startButton.disabled = true;
+                stopButton.disabled = false;
+                recordingStatus.textContent = "Recording...";
+		recordingTimeout = setTimeout(() => {
+            	mediaRecorder.stop();
+            	startButton.disabled = false;
+            	stopButton.disabled = true;
+            	recordingStatus.textContent = "Recording stopped (15s limit reached).";
+        	}, 15000);
+            } catch (error) {
+                console.error('Error accessing microphone:', error);
+            }
+        });
 
-        mediaRecorder.start();
-        startButton.disabled = true;
-        stopButton.disabled = false;
-        recordingStatus.textContent = "Recording...";
-      } catch (error) {
-        console.error('Error accessing microphone:', error);
-      }
-    });
+        stopButton.addEventListener('click', () => {
+            mediaRecorder.stop();
+            startButton.disabled = false;
+            stopButton.disabled = true;
+            recordingStatus.textContent = "Recording stopped.";
+        });
 
-    stopButton.addEventListener('click', () => {
-      mediaRecorder.stop();
-      startButton.disabled = false;
-      stopButton.disabled = true;
-      recordingStatus.textContent = "Recording stopped.";
-    });
+
+
   </script>
 </body>
 </html>
-
