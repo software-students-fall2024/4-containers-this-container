@@ -15,6 +15,7 @@ Author:
 - Thomas Chen, An Hai, Annabella Lee, Edison Wang
 """
 
+import os
 import secrets
 import ast
 import base64  # Moved import statement to the top
