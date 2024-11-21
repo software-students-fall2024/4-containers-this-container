@@ -47,6 +47,7 @@ class User(UserMixin):
         id (str): Unique identifier of the user.
         username (str): Username of the user.
     """
+    
     def __init__(self, user_id, username):
         self.id = user_id
         self.username = username
@@ -76,7 +77,7 @@ def home():
     Renders the home page for the logged-in user.
 
     This function fetches the current user's genre statistics and song recommendations
-    based on their preferences. 
+    based on their preferences.
 
     Returns:
         flask.Response: The rendered 'home.html' template with:
@@ -161,11 +162,11 @@ def get_recommendations(genres):
 
     top_genre_songs = list(
         recommend_collection.aggregate(
-        [
-            {"$match": {"genre": top_genre["Name"]}},
-            {"$sample": {"size": top_genre_count}},
-        ]
-    )
+            [
+                {"$match": {"genre": top_genre["Name"]}},
+                {"$sample": {"size": top_genre_count}},
+            ]
+        )
     )
     second_genre_songs = []
     if second_genre:
@@ -188,7 +189,7 @@ def get_recommendations(genres):
     return result
 
 
-@app.route("/register", methods=['GET', 'POST'])
+@app.route("/register", methods=["GET", "POST"])
 def register():
     """
     Handles user registration.
@@ -218,7 +219,8 @@ def register():
         return redirect(url_for("login"))
     return render_template("register.html")
 
-@app.route("/login", methods=['GET', 'POST'])
+
+@app.route("/login", methods=["GET", "POST"])
 def login():
     """
     Handles user login.
