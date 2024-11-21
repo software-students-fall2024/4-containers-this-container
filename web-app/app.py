@@ -1,11 +1,11 @@
 """
 This module implements a Flask-based web application for a music genre detector.
-It uses a pretrained music genre classification model called music_genre to detect the genre of the input music
-It categorizes music into the following categories:
+It uses a pretrained music genre classification model called music_genre 
+to detect the genre of the input music and categorizes music into the following categories:
 ['blues','classical', 'country','disco','hiphop','jazz','metal','pop','reggae','rock']
 Link to the model: https://huggingface.co/ccmusic-database/music_genre
-The application allows uploading a mp3 or wav file, as well as recording your own music via microphone. 
-The application keeps track of your most recent uploads, statistics on what type of music you uploaded 
+The application allows uploading a mp3 or wav file, as well as recording via microphone. 
+The application keeps track of your most recent uploads, statistics on each genre 
 and a recommendation list generated based on the statistics
 
 Author:
@@ -66,7 +66,7 @@ def home():
                 - "Genre": The genre of the song.
 
     Raises:
-        RuntimeError: If the user is not logged in (handled by Flask-Login's @login_required decorator).
+        RuntimeError: If the user is not logged in(@login_required decorator)
     """
     cur_user = current_user.username
     cur_user_collection = db[cur_user]
@@ -118,7 +118,7 @@ def get_recommendations(genres):
             - "Amount" (int): The count of songs in this genre.
 
     Returns:
-        list: A list of dictionaries, where each dictionary represents a recommended song, containing:
+        list: A list of dictionaries, where each dictionary represents a recommended song:
             - "Title" (str): The title of the song.
             - "Artist" (str): The artist of the song.
             - "Genre" (str): The genre of the song.
@@ -229,7 +229,8 @@ def ini():
 
 def addRecommendations():
     """
-    Reads the contents of 'songs.txt', parses the data, and populates the MongoDB 'recommendations' collection.
+    Reads the contents of 'songs.txt', parses the data, 
+    and populates the MongoDB 'recommendations' collection.
 
     Returns: 
         None
