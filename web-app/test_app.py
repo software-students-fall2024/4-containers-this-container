@@ -10,10 +10,10 @@ This module tests various functionalities of the web application, including:
 Author:
 - Thomas Chen, An Hai, Annabella Lee, Edison Wang
 """
-
-import pytest
+# pylint: disable=redefined-outer-name
 import ast
 from unittest.mock import patch, MagicMock, mock_open
+import pytest
 from bson.objectid import ObjectId
 from app import app, get_stats, get_recommendations, add_recommendations
 
@@ -107,7 +107,7 @@ def test_home_route_logged_in(
     mock_get_recommendations,
     mock_get_stats,
     flask_client
-):
+): 
     """
     Test the home route when a user is logged in.
     """
@@ -125,11 +125,13 @@ def test_home_route_logged_in(
     assert b"rock" in response.data
     assert b"Song A" in response.data
 
+@patch("app.db.create_collection")
 @patch("app.users_collection.find_one")
 @patch("app.generate_password_hash")
 def test_register_success(
     mock_generate_password_hash,
     mock_find_one,
+    mock_create_collection,
     flask_client
 ):
     """
@@ -145,6 +147,8 @@ def test_register_success(
     )
     assert response.status_code == 200
     assert b"Registration successful!" in response.data
+    
+    mock_create_collection.assert_called_once_with("new_user")
 
 def test_register_password_mismatch(flask_client):
     """

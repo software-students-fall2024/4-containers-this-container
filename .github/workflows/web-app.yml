@@ -39,7 +39,7 @@ jobs:
     - name: Run Unit Tests
       run: |
         pip install pytest pytest-flask pytest-cov
-        pytest web-app/tests --cov=web-app --cov-fail-under=80
+        pytest web-app/test_app.py --cov=web-app --cov-fail-under=80
 
     # Lint the code using pylint
     - name: Lint Code with Pylint
