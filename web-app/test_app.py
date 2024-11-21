@@ -107,7 +107,7 @@ def test_home_route_logged_in(
     mock_get_recommendations,
     mock_get_stats,
     flask_client
-): 
+):
     """
     Test the home route when a user is logged in.
     """
@@ -147,7 +147,7 @@ def test_register_success(
     )
     assert response.status_code == 200
     assert b"Registration successful!" in response.data
-    
+
     mock_create_collection.assert_called_once_with("new_user")
 
 def test_register_password_mismatch(flask_client):
