@@ -211,7 +211,6 @@ def register():
         if existing_user:
             flash("Username already exists. Please choose a different one.")
             return redirect(url_for("register"))
-        
         hashed_password = generate_password_hash(password1, method="pbkdf2:sha256")
         users_collection.insert_one({"username": username, "password": hashed_password})
         db.create_collection(username)
