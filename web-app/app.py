@@ -47,7 +47,6 @@ class User(UserMixin):
         id (str): Unique identifier of the user.
         username (str): Username of the user.
     """
-    
     def __init__(self, user_id, username):
         self.id = user_id
         self.username = username
@@ -112,10 +111,9 @@ def get_stats(cur_user_collection):
             - "Percentage" (str): The percentage of songs in this genre, formatted as a string
               with two decimal places.
     """
-    
+
     pipeline = [{"$group": {"_id": "$genre", "count": {"$sum": 1}}}]
     genre_counts = list(cur_user_collection.aggregate(pipeline))
-
     total_songs = sum(item["count"] for item in genre_counts)
 
     result = [
@@ -161,11 +159,13 @@ def get_recommendations(genres):
 
     recommend_collection = db["recommendations"]
 
-    recommend_collection.aggregate(
+    top_genre_songs = list(
+        recommend_collection.aggregate(
         [
             {"$match": {"genre": top_genre["Name"]}},
             {"$sample": {"size": top_genre_count}},
         ]
+    )
     )
     second_genre_songs = []
     if second_genre:
@@ -213,16 +213,11 @@ def register():
             return redirect(url_for("register"))
         
         hashed_password = generate_password_hash(password1, method="pbkdf2:sha256")
-
         users_collection.insert_one({"username": username, "password": hashed_password})
-
         db.create_collection(username)
-
         flash("Registration successful! You can now log in.")
         return redirect(url_for("login"))
-    
     return render_template("register.html")
-
 
 @app.route("/login", methods=['GET', 'POST'])
 def login():
