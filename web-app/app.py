@@ -18,7 +18,7 @@ Author:
 import os
 import secrets
 import ast
-import base64  # Moved import statement to the top
+import base64
 
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_login import LoginManager, UserMixin, login_user
