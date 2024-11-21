@@ -5,3 +5,4 @@ flask-login
 transformers
 bson
 tensorflow
+tf-keras==2.16.0

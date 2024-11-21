@@ -3,3 +3,4 @@ numpy
 flask
 transformers
 tensorflow
+tf-keras==2.16.0

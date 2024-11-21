@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "fa9144bedd3b6e50726e1cba6b4c6f81462f11c74e20a4b48836801a37d9cde8"
+            "sha256": "e7fcf7585238d00cabab1f9c4a6b62321e5b1079d410a416cebb7ec7debbd76d"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -1266,6 +1266,15 @@
             ],
             "markers": "python_version >= '3.9'",
             "version": "==2.5.0"
+        },
+        "tf-keras": {
+            "hashes": [
+                "sha256:b2ad0541fa7d9e92c4b7a1b96593377afb58aaff374299a6ca6be1a42f51d899",
+                "sha256:db53891f1ac98197c2acced98cdca8c06ba8255655a6cb7eb95ed49676118280"
+            ],
+            "index": "pypi",
+            "markers": "python_version >= '3.9'",
+            "version": "==2.16.0"
         },
         "tokenizers": {
             "hashes": [

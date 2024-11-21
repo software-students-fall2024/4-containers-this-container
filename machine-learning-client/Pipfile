@@ -18,6 +18,7 @@ numpy = "*"
 torch = "*"
 transformers = "*"
 tensorflow = "*"
+tf-keras = "==2.16.0"
 
 [dev-packages]
 
