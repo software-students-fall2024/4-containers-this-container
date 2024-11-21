@@ -2,3 +2,4 @@ pymongo
 numpy
 flask
 transformers
+tensorflow

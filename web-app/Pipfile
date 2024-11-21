@@ -18,6 +18,7 @@ numpy = "*"
 torch = "*"
 transformers = "*"
 bson = "*"
+tensorflow = "*"
 
 [dev-packages]
 
