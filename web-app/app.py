@@ -254,6 +254,26 @@ def addRecommendations():
     recommend_collection.insert_many(songs)
 
 
+@app.route('/upload', methods=['POST'])
+def upload():
+    music_name = request.form.get('music_name')
+    author = request.form.get('author')
+    music_file = request.files.get('music_file')
+    recorded_audio = request.form.get('recorded_audio')
+
+    if music_file:
+        music_file.save(f'uploads/{music_name}_{author}.mp3')
+    elif recorded_audio:
+        import base64
+        audio_data = base64.b64decode(recorded_audio.split(',')[1])
+        with open(f'uploads/{music_name}_{author}.webm', 'wb') as f:
+            f.write(audio_data)
+
+    return "Upload successful"
+
+
+
+
 if __name__ == "__main__":
     addRecommendations()
     app.run(host="0.0.0.0", port=5001, debug=True)
