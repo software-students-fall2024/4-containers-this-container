@@ -298,7 +298,7 @@ def add_recommendations():
     recommend_collection.insert_many(songs)
 
 
-@app.route("/upload", methods=["POST"])
+@app.route("/upload", methods=["GET", "POST"])
 def upload():
     """
     Handles music file or audio recording upload.
@@ -310,6 +310,9 @@ def upload():
 	Redirects to the home page after successfully saving 
         the title, author, and genre to the user's collection.
     """
+    if request.method == "GET":
+        return render_template("upload.html")
+    
     music_file = request.files.get("music_file")
     recorded_audio = request.form.get("recorded_audio")
     cur_user_collection = db[current_user.username]
