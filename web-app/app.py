@@ -1,23 +1,23 @@
 """
 This module implements a Flask-based web application for a music genre detector.
-It uses a pretrained music genre classification model called music_genre to detect the genre of the input music
+It uses a pretrained music genre classification model called music_genre to detect the genre of the input music.
 It categorizes music into the following categories:
-['blues','classical', 'country','disco','hiphop','jazz','metal','pop','reggae','rock']
-Link to the model: https://huggingface.co/ccmusic-database/music_genre
-The application allows uploading a mp3 or wav file, as well as recording your own music via microphone. 
-The application keeps track of your most recent uploads, statistics on what type of music you uploaded 
-and a recommendation list generated based on the statistics
+['blues', 'classical', 'country', 'disco', 'hiphop', 'jazz', 'metal', 'pop', 'reggae', 'rock'].
+Link to the model: https://huggingface.co/ccmusic-database/music_genre.
+The application allows uploading an mp3 or wav file, as well as recording your own music via microphone.
+The application keeps track of your most recent uploads, statistics on what type of music you uploaded,
+and a recommendation list generated based on the statistics.
 
 Author:
 - Thomas Chen, An Hai, Annabella Lee, Edison Wang
 """
 
-
 import secrets
 import ast
+import base64  # Moved import statement to the top
 
 from flask import Flask, render_template, request, redirect, url_for, flash
-from flask_login import LoginManager,UserMixin,login_user,login_required,logout_user,current_user
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from pymongo import MongoClient
 from werkzeug.security import generate_password_hash, check_password_hash
 from bson import ObjectId
@@ -26,24 +26,45 @@ from bson import ObjectId
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(16)
 
-client = MongoClient("mongodb://mongodb:27017/")
+client = MongoClient(
+    "mongodb://mongodb:27017/"
+)
 db = client.genre_detector
 users_collection = db.users
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
+
 class User(UserMixin):
+    """
+    Represents a user in the genre detector application.
+
+    Attributes:
+        id (str): Unique identifier of the user.
+        username (str): Username of the user.
+    """
     def __init__(self, user_id, username):
         self.id = user_id
         self.username = username
 
+
 @login_manager.user_loader
 def load_user(user_id):
+    """
+    Loads a user from the database by their user ID.
+
+    Args:
+        user_id (str): The user's ID.
+
+    Returns:
+        User: A User object if the user is found, otherwise None.
+    """
     user_data = users_collection.find_one({"_id": ObjectId(user_id)})
     if user_data:
         return User(user_id=user_data["_id"], username=user_data["username"])
     return None
+
 
 @app.route('/home')
 @login_required
@@ -64,15 +85,17 @@ def home():
                 - "Title": The song title.
                 - "Artist": The artist's name.
                 - "Genre": The genre of the song.
-
-    Raises:
-        RuntimeError: If the user is not logged in (handled by Flask-Login's @login_required decorator).
     """
     cur_user = current_user.username
     cur_user_collection = db[cur_user]
     genres = get_stats(cur_user_collection)
     recommendations = get_recommendations(genres)
-    return render_template('home.html', genres = genres, recommendations = recommendations)
+    return render_template(
+        'home.html', 
+        genres=genres, 
+        recommendations=recommendations
+    )
+
 
 def get_stats(cur_user_collection):
     """
@@ -94,7 +117,9 @@ def get_stats(cur_user_collection):
     ]
     genre_counts = list(cur_user_collection.aggregate(pipeline))
 
-    total_songs = sum(item["count"] for item in genre_counts)
+    total_songs = sum(
+        item["count"] for item in genre_counts
+    )
 
     result = [
         {
@@ -106,6 +131,7 @@ def get_stats(cur_user_collection):
     ]
 
     return result
+
 
 def get_recommendations(genres):
     """
@@ -122,11 +148,6 @@ def get_recommendations(genres):
             - "Title" (str): The title of the song.
             - "Artist" (str): The artist of the song.
             - "Genre" (str): The genre of the song.
-
-    Raises:
-        KeyError: If the "Name" or "Amount" keys are missing in the input genres list.
-        ValueError: If the input genres list is not valid or empty.
-    sorted_genres = sorted(genres, key=lambda x: x["Amount"], reverse=True)
     """
     sorted_genres = sorted(genres, key=lambda x: x["Amount"], reverse=True)
 
@@ -160,31 +181,49 @@ def get_recommendations(genres):
     combined_songs = top_genre_songs + second_genre_songs
 
     result = [
-        {"Title": song["title"], "Artist": song["artist"], "Genre": song["genre"]}
+        {
+            "Title": song["title"],
+            "Artist": song["artist"],
+            "Genre": song["genre"]
+        }
         for song in combined_songs
     ]
 
     return result
 
 
-
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    """
+    Handles user registration.
+
+    If the request method is POST, processes the registration form and creates a new user.
+
+    Returns:
+        flask.Response: The rendered 'register.html' template or a redirect to the login page.
+    """
     if request.method == 'POST':
         username = request.form['username']
         password1 = request.form.get('password1')
         password2 = request.form.get('password2')
 
         if password1 != password2:
-            flash('Passwords do not match. Please try again.')
+            flash(
+                'Passwords do not match. Please try again.'
+            )
             return redirect(url_for('register'))
 
         existing_user = users_collection.find_one({"username": username})
         if existing_user:
-            flash('Username already exists. Please choose a different one.')
+            flash(
+                'Username already exists. Please choose a different one.'
+            )
             return redirect(url_for('register'))
 
-        hashed_password = generate_password_hash(password1, method='pbkdf2:sha256')
+        hashed_password = generate_password_hash(
+            password1, 
+            method='pbkdf2:sha256'
+        )
 
         users_collection.insert_one({"username": username, "password": hashed_password})
 
@@ -198,6 +237,14 @@ def register():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    """
+    Handles user login.
+
+    If the request method is POST, processes the login form and authenticates the user.
+
+    Returns:
+        flask.Response: The rendered 'login.html' template or a redirect to the home page.
+    """
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -218,6 +265,12 @@ def login():
 @app.route('/logout')
 @login_required
 def logout():
+    """
+    Logs out the current user and redirects to the login page.
+
+    Returns:
+        flask.Response: A redirect to the login page.
+    """
     logout_user()
     flash('You have been logged out.')
     return redirect(url_for('login'))
@@ -225,9 +278,16 @@ def logout():
 
 @app.route('/')
 def ini():
+    """
+    Redirects the root URL to the login page.
+
+    Returns:
+        flask.Response: A redirect to the login page.
+    """
     return redirect(url_for('login'))
 
-def addRecommendations():
+
+def add_recommendations():
     """
     Reads the contents of 'songs.txt', parses the data, and populates the MongoDB 'recommendations' collection.
 
@@ -247,7 +307,6 @@ def addRecommendations():
     songs_dict = ast.literal_eval(file_content)
     songs = songs_dict if isinstance(songs_dict, list) else []
 
-
     if recommend_collection.count_documents({}) > 0:
         recommend_collection.delete_many({})
 
@@ -256,24 +315,38 @@ def addRecommendations():
 
 @app.route('/upload', methods=['POST'])
 def upload():
+    """
+    Handles music file or audio recording upload.
+
+    Args:
+        None
+
+    Returns:
+        str: A success message indicating the upload was successful.
+    """
     music_name = request.form.get('music_name')
     author = request.form.get('author')
     music_file = request.files.get('music_file')
     recorded_audio = request.form.get('recorded_audio')
 
     if music_file:
-        music_file.save(f'uploads/{music_name}_{author}.mp3')
+        music_file.save(
+            f'uploads/{music_name}_{author}.mp3'
+        )
     elif recorded_audio:
-        import base64
-        audio_data = base64.b64decode(recorded_audio.split(',')[1])
+        audio_data = base64.b64decode(
+            recorded_audio.split(',')[1]
+        )
         with open(f'uploads/{music_name}_{author}.webm', 'wb') as f:
             f.write(audio_data)
 
     return "Upload successful"
 
 
-
-
 if __name__ == "__main__":
-    addRecommendations()
-    app.run(host="0.0.0.0", port=5001, debug=True)
+    add_recommendations()
+    app.run(
+        host="0.0.0.0", 
+        port=5001, 
+        debug=True
+    )
