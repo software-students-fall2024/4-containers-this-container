@@ -1,0 +1,42 @@
+name: Machine Learning Client CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:latest
+        ports:
+          - 27017:27017
+
+    steps:
+    # Checkout the repository
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    # Set up Python environment
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+
+    # Lint the code using pylint
+    - name: Lint Code with Pylint
+      run: |
+        pip install pylint
+        pylint machine-learning-client/*.py
+
+    # Format the code using Black
+    - name: Format Code with Black
+      run: |
+        pip install black
+        black machine-learning-client
