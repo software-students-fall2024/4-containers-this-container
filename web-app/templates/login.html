@@ -136,7 +136,11 @@
             <input type="text" name="username" placeholder="e.g. myUsername" id="username" minlength="6" required>
             <label for="password">Password:</label>
             <input type="password" name="password" placeholder="e.g. 12345678" id="password" minlength="8" required>
-            <p id="errorMessage" style="color: red;"> {{ message }} </p>
+            {% with messages = get_flashed_messages(with_categories=false) %}
+            {% if messages %}
+                <p id="errorMessage" style="color: red;">{{ messages[0] }}</p>
+            {% endif %}
+            {% endwith %}
             <div class="button-container">
                 <input type="submit" value="Log In" id="login">
                 <a href="/register" id="register">Register</a>
