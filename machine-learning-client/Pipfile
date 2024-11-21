@@ -17,7 +17,6 @@ werkzeug = "*"
 numpy = "*"
 torch = "*"
 transformers = "*"
-transformers[torch] = "*"
 
 
 [dev-packages]
