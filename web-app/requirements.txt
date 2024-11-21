@@ -1,7 +1,7 @@
 pymongo
+pytest
 numpy
 flask
 flask-login
 transformers
 bson
-pytest
