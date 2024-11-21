@@ -140,8 +140,6 @@ def get_recommendations(genres):
             - "Amount" (int): The count of songs in this genre.
 
     Returns:
-        list: A list of dictionaries, where each dictionary represents a
-        recommended song, containing:
             - "Title" (str): The title of the song.
             - "Artist" (str): The artist of the song.
             - "Genre" (str): The genre of the song.
@@ -274,9 +272,6 @@ def ini():
 
 def add_recommendations():
     """
-    Reads the contents of 'songs.txt', parses the data, and populates the MongoDB
-    'recommendations' collection.
-
     Returns:
         None
 

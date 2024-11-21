@@ -1,3 +1,4 @@
 pymongo
 numpy
 flask
+transformers

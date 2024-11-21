@@ -14,9 +14,11 @@ pymongo = "*"
 python-dotenv = "*"
 flask-login = "*"
 werkzeug = "*"
-numpy = "1.23.1"
+numpy = "*"
 torch = "*"
 transformers = "*"
+transformers[torch] = "*"
+
 
 [dev-packages]
 
