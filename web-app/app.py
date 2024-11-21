@@ -160,7 +160,7 @@ def get_recommendations(genres):
     top_genre_count = round(5 * (top_genre["Amount"] / total_amount))
     second_genre_count = 5 - top_genre_count
 
-    recommend_collection = db["recommendations"]
+    recommend_collection = db.recommendations
 
     top_genre_songs = list(
         recommend_collection.aggregate(
@@ -319,21 +319,20 @@ def upload():
     if music_file:
         audio_data = base64.b64encode(music_file.read()).decode("utf-8")
     elif recorded_audio:
-        audio_data = recorded_audio.split(",")[1].decode("utf-8")
+        audio_data = recorded_audio.split(",")[1]
     else:
         flash("No file uploaded or recorded audio received.")
         return redirect(url_for('home'))
 
     response = requests.post(
         ML_CLIENT_URL,
-        json={"audio": audio_data},
+        json={"audio": f"data:audio/wav;base64,{audio_data}"},
         timeout=30
     )
-
     genre = response.json()["result"]
 
     cur_user_collection.insert_one({
-        "genre": genre
+        "genre": genre.capitalize()
     })
 
     flash("Upload successful and saved to your collection.")

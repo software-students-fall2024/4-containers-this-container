@@ -111,12 +111,6 @@
   <div class="container">
     <h1>Upload or Record Music</h1>
     <form action="/upload" method="POST" enctype="multipart/form-data">
-      <label for="music-name">Music Name:</label>
-      <input type="text" id="music-name" name="music_name" placeholder="Enter the name of the music" required>
-
-      <label for="author">Author:</label>
-      <input type="text" id="author" name="author" placeholder="Enter the author's name" required>
-
       <label for="music-file">Upload Music File:</label>
       <input type="file" id="music-file" name="music_file" accept=".mp3,.wav,.ogg">
 
@@ -132,63 +126,83 @@
       <input type="submit" value="Submit">
     </form>
   </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ffmpeg.js/0.10.1/ffmpeg.min.js"></script>
 <script>
+  async function convertWebMToMP3(audioChunks) {
+    // Create a Blob for the recorded WebM audio
+    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+    const webmArrayBuffer = await audioBlob.arrayBuffer();
+
+    // Load ffmpeg.js
+    const ffmpeg = await createFFmpeg({ log: true });
+    await ffmpeg.load();
+
+    // Write WebM audio to ffmpeg's virtual file system
+    ffmpeg.FS('writeFile', 'input.webm', new Uint8Array(webmArrayBuffer));
+
+    // Transcode WebM to MP3
+    await ffmpeg.run('-i', 'input.webm', '-q:a', '2', 'output.mp3');
+
+    // Read the output MP3 file
+    const mp3Data = ffmpeg.FS('readFile', 'output.mp3');
+    const mp3Blob = new Blob([mp3Data.buffer], { type: 'audio/mpeg' });
+
+    // Return the MP3 blob
+    return mp3Blob;
+  }
 
 	const startButton = document.getElementById('start-recording');
-        const stopButton = document.getElementById('stop-recording');
-        const recordingStatus = document.getElementById('recording-status');
-        const audioPreview = document.getElementById('audio-preview');
-        const recordedAudioInput = document.getElementById('recorded-audio');
+  const stopButton = document.getElementById('stop-recording');
+  const recordingStatus = document.getElementById('recording-status');
+  const audioPreview = document.getElementById('audio-preview');
+  const recordedAudioInput = document.getElementById('recorded-audio');
 
-        let mediaRecorder;
-        let audioChunks = [];
+  let mediaRecorder;
+  let audioChunks = [];
 	let recordingTimeout;
-        startButton.addEventListener('click', async () => {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRecorder = new MediaRecorder(stream);
+  startButton.addEventListener('click', async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorder = new MediaRecorder(stream);
 
-                mediaRecorder.ondataavailable = event => {
-                    audioChunks.push(event.data);
-                };
+      mediaRecorder.ondataavailable = event => {
+        audioChunks.push(event.data);
+      };
 
-                mediaRecorder.onstop = () => {
-                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                    const audioURL = URL.createObjectURL(audioBlob);
-                    audioPreview.src = audioURL;
-                    audioPreview.hidden = false;
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+        const audioURL = URL.createObjectURL(audioBlob);
+        audioPreview.src = audioURL;
+        audioPreview.hidden = false;
 
-                    const reader = new FileReader();
-                    reader.readAsDataURL(audioBlob);
-                    reader.onloadend = () => {
-                        recordedAudioInput.value = reader.result;
-                    };
-                };
+        const reader = new FileReader();
+        reader.readAsDataURL(audioBlob);
+        reader.onloadend = () => {
+          recordedAudioInput.value = reader.result;
+        };
+      };
 
-                mediaRecorder.start();
-                startButton.disabled = true;
-                stopButton.disabled = false;
-                recordingStatus.textContent = "Recording...";
-		recordingTimeout = setTimeout(() => {
-            	mediaRecorder.stop();
-            	startButton.disabled = false;
-            	stopButton.disabled = true;
-            	recordingStatus.textContent = "Recording stopped (15s limit reached).";
-        	}, 15000);
-            } catch (error) {
-                console.error('Error accessing microphone:', error);
-            }
-        });
+      mediaRecorder.start();
+      startButton.disabled = true;
+      stopButton.disabled = false;
+      recordingStatus.textContent = "Recording..."; 
+      recordingTimeout = setTimeout(() => {
+        mediaRecorder.stop();
+        startButton.disabled = false;
+        stopButton.disabled = true;
+        recordingStatus.textContent = "Recording stopped (15s limit reached).";
+      }, 15000);
+    } catch (error) {
+      console.error('Error accessing microphone:', error);
+    }
+  });
 
-        stopButton.addEventListener('click', () => {
-            mediaRecorder.stop();
-            startButton.disabled = false;
-            stopButton.disabled = true;
-            recordingStatus.textContent = "Recording stopped.";
-        });
-
-
-
+  stopButton.addEventListener('click', () => {
+    mediaRecorder.stop();
+    startButton.disabled = false;
+    stopButton.disabled = true;
+    recordingStatus.textContent = "Recording stopped.";
+  });
   </script>
 </body>
 </html>

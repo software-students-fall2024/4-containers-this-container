@@ -48,22 +48,35 @@ def test_get_recommendations(mock_db):
     Test the `get_recommendations` function for generating song recommendations.
     """
     mock_recommendations = MagicMock()
-    mock_recommendations.aggregate.side_effect = [
-        [{"title": "Song A", "artist": "Artist 1", "genre": "rock"}],
-        [{"title": "Song B", "artist": "Artist 2", "genre": "pop"}],
-    ]
     mock_db.recommendations = mock_recommendations
+    mock_recommendations.aggregate.side_effect = [
+        [
+            {"title": "Song A", "artist": "Artist 1", "genre": "rock"},
+            {"title": "Song C", "artist": "Artist 3", "genre": "rock"},
+            {"title": "Song D", "artist": "Artist 4", "genre": "rock"},
+        ],
+        [
+            {"title": "Song B", "artist": "Artist 2", "genre": "pop"},
+            {"title": "Song E", "artist": "Artist 5", "genre": "pop"},
+        ],
+    ]
 
     genres = [{"Name": "rock", "Amount": 5}, {"Name": "pop", "Amount": 3}]
+
     recommendations = get_recommendations(genres)
 
     expected_recommendations = [
         {"Title": "Song A", "Artist": "Artist 1", "Genre": "rock"},
+        {"Title": "Song C", "Artist": "Artist 3", "Genre": "rock"},
+        {"Title": "Song D", "Artist": "Artist 4", "Genre": "rock"},
         {"Title": "Song B", "Artist": "Artist 2", "Genre": "pop"},
+        {"Title": "Song E", "Artist": "Artist 5", "Genre": "pop"},
     ]
+    
+    assert mock_recommendations.aggregate.call_count == 2, "Aggregate was not called the expected number of times."
+    assert recommendations == expected_recommendations, "Recommendations do not match expected output."
 
-    assert recommendations == expected_recommendations
-    assert mock_recommendations.aggregate.call_count == 2
+
 
 @patch("app.db")
 def test_home_route_logged_out(mock_db, flask_client):

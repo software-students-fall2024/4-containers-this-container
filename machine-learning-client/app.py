@@ -73,11 +73,16 @@ def predict(audio_data):
         pred: prediction of the model.
     """
     download_model()
+    sample_width = 2
+    channels = 1
+    padding = len(audio_data) % (sample_width * channels)
+    if padding:
+        audio_data += b'\0' * (sample_width * channels - padding)
     audio_segment = AudioSegment(
         audio_data,
         frame_rate=16000,  # Sampling rate
-        sample_width=2,    # 2 bytes = 16-bit audio
-        channels=1         # Mono audio
+        sample_width=sample_width,    # 2 bytes = 16-bit audio
+        channels=channels         # Mono audio
     )
 
     # Export the audio to an MP3 file
@@ -103,7 +108,8 @@ def classify_api():
     audio_data = audio_json.get("audio")
     raw_audio = base64.b64decode(audio_data.split(",")[1])
     result = predict(raw_audio)
-    return jsonify(result)
+    print(result)
+    return jsonify({"result": result})
 
 
 if __name__ == "__main__":
