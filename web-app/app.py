@@ -312,7 +312,7 @@ def upload():
     """
     if request.method == "GET":
         return render_template("upload.html")
-    
+
     music_file = request.files.get("music_file")
     recorded_audio = request.form.get("recorded_audio")
     cur_user_collection = db[current_user.username]
