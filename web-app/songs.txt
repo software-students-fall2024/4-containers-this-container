@@ -1,4 +1,4 @@
-songs = [
+[
     {"title": "The Thrill is Gone", "artist": "B.B. King", "genre": "Blues"},
     {"title": "Cross Road Blues", "artist": "Robert Johnson", "genre": "Blues"},
     {"title": "Hoochie Coochie Man", "artist": "Muddy Waters", "genre": "Blues"},
