@@ -3,3 +3,4 @@ numpy
 flask
 flask-login
 transformers
+bson

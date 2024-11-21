@@ -23,13 +23,10 @@
             font-weight: bold;
             text-transform: uppercase;
         }
-
     </style>
 {% endblock %}
 
 {% block container %}
-    <h1>Song Portal</h1>
-
     <!-- Song Recommendation Table -->
     <section>
         <h2> Recommendated for you</h2>
@@ -45,7 +42,7 @@
                 {% for song in recommendations %}
                 <tr>
                     <td>{{ song["Title"] }}</td>
-                    <td>{{ song["Author"] }}</td>
+                    <td>{{ song["Artist"] }}</td>
                     <td>{{ song["Genre"] }}</td>
                 </tr> 
                 {% endfor %}
@@ -65,7 +62,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for genre in genres}
+                {% for genre in genres %}
                 <tr>
                     <td>{{ genre["Name"] }}</td>
                     <td>{{ genre["Amount"] }}</td>
