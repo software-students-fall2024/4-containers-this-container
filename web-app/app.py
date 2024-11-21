@@ -25,12 +25,14 @@ from flask_login import login_required, logout_user, current_user
 from pymongo import MongoClient
 from werkzeug.security import generate_password_hash, check_password_hash
 from bson import ObjectId
+import requests
 
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(16)
 
-client = MongoClient("mongodb://mongodb:27017/")
+mongo_uri = os.getenv('MONGO_URI')
+client = MongoClient(mongo_uri)
 
 db = client.genre_detector
 users_collection = db.users
@@ -38,6 +40,7 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login"
 
+ML_CLIENT_URL = os.getenv("ML_CLIENT_URL")
 
 class User(UserMixin):
     """
@@ -306,42 +309,32 @@ def upload():
 	Redirects to the home page after successfully saving 
         the title, author, and genre to the user's collection.
     """
-    music_name = request.form.get("music_name")
-    author = request.form.get("author")
     music_file = request.files.get("music_file")
     recorded_audio = request.form.get("recorded_audio")
     cur_user_collection = db[current_user.username]
     if music_file:
-        music_file.save(f"uploads/{music_name}_{author}.mp3")
+        audio_data = base64.b64encode(music_file.read()).decode("utf-8")
     elif recorded_audio:
-        audio_data = base64.b64decode(recorded_audio.split(",")[1])
-        with open(f"uploads/{music_name}_{author}.webm", "wb") as f:
-            f.write(audio_data)
+        audio_data = recorded_audio.split(",")[1].decode("utf-8")
     else:
         flash("No file uploaded or recorded audio received.")
         return redirect(url_for('home'))
-
-    genre = detect_genre(file_path)
+    
+    response = requests.post(
+        ML_CLIENT_URL,
+        json={"audio": audio_data},
+        timeout=30
+    )
+    
+    genre = response.json()["result"]
 
     cur_user_collection.insert_one({
-        "title": music_name,
-        "author": author,
         "genre": genre
     })
 
     flash("Upload successful and saved to your collection.")
     return redirect(url_for('home'))
 
-def detect_genre(file_path):
-    """
-	Detects the genre of a given music file.
-
-    Args:
-        file_path (str): The file path of the music file to be analyzed.
-
-    Returns:
-        str: The detected genre of the music.
-    """
 
 if __name__ == "__main__":
     add_recommendations()

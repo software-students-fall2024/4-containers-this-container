@@ -7,7 +7,11 @@ with the model, and parse the inference result and output the model's prediction
 
 # from pymongo import MongoClient
 from transformers import pipeline
+from flask import Flask, request, jsonify
+from pydub import AudioSegment
+import base64
 
+app = Flask(__name__)
 
 def download_model():
     """
@@ -58,17 +62,49 @@ def parse_result(result):
     return prediction
 
 
-def main(audio_file):
+def predict(audio_data):
     """
-    Main function to download or load the model, make an inference, and parse and print the result.
+    Main function to download or load the model, make an inference, and parse and return the result.
 
     Args:
-        image_path (str): Path to the input image.
+        audio_data (str): raw audio data.
+        
+    Returns:
+        pred: prediction of the model.
     """
     download_model()
-    result = inference(audio_file)
+    audio_segment = AudioSegment(
+        audio_data,
+        frame_rate=16000,  # Sampling rate
+        sample_width=2,    # 2 bytes = 16-bit audio
+        channels=1         # Mono audio
+    )
+
+    # Export the audio to an MP3 file
+    output_file = "output.mp3"
+    audio_segment.export(output_file, format="mp3")
+    result = inference(output_file)
     pred = parse_result(result)
-    print(f"The genre of your music is: {pred}.")
+    # print(f"The genre of your music is: {pred}.")
+    return pred
 
 
-main("3_symphony_short.mp3")
+# main("3_symphony_short.mp3")
+
+@app.route("/classify", methods=["POST"])
+def classify_api():
+    """
+    ML API that classifies the music.
+    
+    Returns:
+        result: classification result.
+    """
+    audio_json = request.get_json()
+    audio_data = audio_json.get("audio")
+    raw_audio = base64.b64decode(base64_audio_data.split(",")[1])
+    result = predict(raw_audio)
+    return jsonify(result)
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5001)

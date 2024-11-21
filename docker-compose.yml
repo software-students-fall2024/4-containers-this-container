@@ -10,6 +10,8 @@ services:
     build:
       context: ./machine-learning-client
     container_name: ml_client
+    ports:
+      - "5001:5001"
     depends_on:
       - mongodb
     environment:
@@ -20,9 +22,11 @@ services:
     container_name: web_app
     depends_on:
       - mongodb
+      - machine-learning-client
     ports:
       - "5001:5001"
     environment:
       - MONGO_URI=mongodb://mongodb:27017
+      - ML_CLIENT_URL=http://machine-learning-client:5001/classify
 volumes:
   mongodb_data:
