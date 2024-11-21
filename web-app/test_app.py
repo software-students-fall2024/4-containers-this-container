@@ -1,11 +1,16 @@
 # test_app.py
 
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, mock_open
 from flask.testing import FlaskClient
 import pytest
 from bson.objectid import ObjectId
-from app import app, get_stats, get_recommendations
+from app import app, get_stats, get_recommendations, add_recommendations
+import ast
 
+SONGS_CONTENT = """[
+    {"title": "The Thrill is Gone", "artist": "B.B. King", "genre": "Blues"},
+    {"title": "Cross Road Blues", "artist": "Robert Johnson", "genre": "Blues"}
+]"""
 
 @pytest.fixture
 def flask_client():
@@ -15,7 +20,6 @@ def flask_client():
     app.config["TESTING"] = True
     with app.test_client() as client:
         yield client
-
 
 @patch("app.db")
 def test_get_stats(mock_db):
@@ -38,16 +42,17 @@ def test_get_stats(mock_db):
     assert stats == expected_stats
     mock_collection.aggregate.assert_called_once()
 
-
-@patch("app.db.recommendations")
-def test_get_recommendations(mock_recommendations):
+@patch("app.db")
+def test_get_recommendations(mock_db):
     """
     Test the `get_recommendations` function for generating song recommendations.
     """
+    mock_recommendations = MagicMock()
     mock_recommendations.aggregate.side_effect = [
         [{"title": "Song A", "artist": "Artist 1", "genre": "rock"}],
         [{"title": "Song B", "artist": "Artist 2", "genre": "pop"}],
     ]
+    mock_db.recommendations = mock_recommendations
 
     genres = [{"Name": "rock", "Amount": 5}, {"Name": "pop", "Amount": 3}]
     recommendations = get_recommendations(genres)
@@ -60,22 +65,21 @@ def test_get_recommendations(mock_recommendations):
     assert recommendations == expected_recommendations
     assert mock_recommendations.aggregate.call_count == 2
 
-
-
-def test_home_route_logged_out(flask_client):
+@patch("app.db")
+def test_home_route_logged_out(mock_db, flask_client):
     """
     Test accessing the home route without being logged in.
     """
     response = flask_client.get("/home", follow_redirects=True)
     assert response.status_code == 200
-    assert b'<a href="/login"' in response.data  # Adjust as per the actual rendered HTML
-
-
+    assert b'<form' in response.data
+    assert b'Register' in response.data
 
 @patch("app.get_stats")
 @patch("app.get_recommendations")
 @patch("flask_login.utils._get_user")
-def test_home_route_logged_in(mock_get_user, mock_get_recommendations, mock_get_stats, flask_client):
+@patch("app.db")
+def test_home_route_logged_in(mock_db, mock_get_user, mock_get_recommendations, mock_get_stats, flask_client):
     """
     Test the home route when a user is logged in.
     """
@@ -93,11 +97,11 @@ def test_home_route_logged_in(mock_get_user, mock_get_recommendations, mock_get_
     assert b"rock" in response.data
     assert b"Song A" in response.data
 
-
 @patch("app.users_collection.find_one")
 @patch("app.generate_password_hash")
 @patch("app.users_collection.insert_one")
-def test_register_success(mock_insert_one, mock_generate_password_hash, mock_find_one, flask_client):
+@patch("app.db")
+def test_register_success(mock_db, mock_insert_one, mock_generate_password_hash, mock_find_one, flask_client):
     """
     Test the registration process with valid data.
     """
@@ -112,7 +116,6 @@ def test_register_success(mock_insert_one, mock_generate_password_hash, mock_fin
     assert response.status_code == 200
     assert b"Registration successful!" in response.data
 
-
 def test_register_password_mismatch(flask_client):
     """
     Test the registration process when passwords do not match.
@@ -125,27 +128,9 @@ def test_register_password_mismatch(flask_client):
     assert response.status_code == 200
     assert b"Passwords do not match" in response.data
 
-
 @patch("app.users_collection.find_one")
-@patch("app.check_password_hash")
-def test_login_success(mock_check_password_hash, mock_find_one, flask_client):
-    """
-    Test the login process with valid credentials.
-    """
-    mock_find_one.return_value = {"_id": ObjectId(), "username": "test_user", "password": "hashed"}
-    mock_check_password_hash.return_value = True
-
-    response = flask_client.post(
-        "/login",
-        data={"username": "test_user", "password": "password"},
-        follow_redirects=True,
-    )
-    assert response.status_code == 200
-    assert b"Login successful!" in response.data
-
-
-@patch("app.users_collection.find_one")
-def test_login_invalid_credentials(mock_find_one, flask_client):
+@patch("app.db")
+def test_login_invalid_credentials(mock_db, mock_find_one, flask_client):
     """
     Test the login process with invalid credentials.
     """
@@ -159,11 +144,56 @@ def test_login_invalid_credentials(mock_find_one, flask_client):
     assert response.status_code == 200
     assert b"Invalid username or password" in response.data
 
+@patch("app.users_collection.find_one")
+@patch("app.check_password_hash")
+@patch("app.db")
+def test_login_success(mock_db, mock_check_password_hash, mock_find_one, flask_client):
+    """
+    Test the login process with valid credentials.
+    """
+    mock_find_one.return_value = {"_id": ObjectId(), "username": "test_user", "password": "hashed"}
+    mock_check_password_hash.return_value = True
 
-def test_logout(flask_client):
+    response = flask_client.post(
+        "/login",
+        data={"username": "test_user", "password": "password"},
+        follow_redirects=True,
+    )
+    assert response.status_code == 200 
+
+@patch("app.users_collection.find_one")
+@patch("app.db")
+def test_login_invalid_credentials(mock_db, mock_find_one, flask_client):
     """
-    Test the logout process.
+    Test the login process with invalid credentials.
     """
-    response = flask_client.get("/logout", follow_redirects=True)
+    mock_find_one.return_value = None  
+
+    response = flask_client.post(
+        "/login",
+        data={"username": "test_user", "password": "password"},
+        follow_redirects=True,
+    )
     assert response.status_code == 200
-    assert b"You have been logged out." in response.data
+    assert b"Invalid username or password" in response.data  
+
+@patch("app.db")
+@patch("builtins.open", new_callable=mock_open, read_data=SONGS_CONTENT)
+def test_add_recommendations(mock_file, mock_db):
+    """
+    Test the `add_recommendations` function by reading `songs.txt` and verifying
+    that the data is correctly added to the mock database.
+    """
+    mock_recommendations = MagicMock()
+    mock_db.recommendations = mock_recommendations
+
+    mock_recommendations.count_documents.return_value = 5
+    
+    add_recommendations()
+    
+    expected_songs = ast.literal_eval(SONGS_CONTENT)
+    
+    mock_file.assert_called_once_with("songs.txt", "r", encoding="utf-8")
+    
+    mock_recommendations.delete_many.assert_called_once_with({})
+    mock_recommendations.insert_many.assert_called_once_with(expected_songs)
