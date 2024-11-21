@@ -303,22 +303,45 @@ def upload():
         None
 
     Returns:
-        str: A success message indicating the upload was successful.
+	Redirects to the home page after successfully saving 
+        the title, author, and genre to the user's collection.
     """
     music_name = request.form.get("music_name")
     author = request.form.get("author")
     music_file = request.files.get("music_file")
     recorded_audio = request.form.get("recorded_audio")
-
+    cur_user_collection = db[current_user.username]
     if music_file:
         music_file.save(f"uploads/{music_name}_{author}.mp3")
     elif recorded_audio:
         audio_data = base64.b64decode(recorded_audio.split(",")[1])
         with open(f"uploads/{music_name}_{author}.webm", "wb") as f:
             f.write(audio_data)
+    else:
+        flash("No file uploaded or recorded audio received.")
+        return redirect(url_for('home'))
 
-    return "Upload successful"
+    genre = detect_genre(file_path)
 
+    cur_user_collection.insert_one({
+        "title": music_name,
+        "author": author,
+        "genre": genre
+    })
+
+    flash("Upload successful and saved to your collection.")
+    return redirect(url_for('home'))
+
+def detect_genre(file_path):
+    """
+	Detects the genre of a given music file.
+
+    Args:
+        file_path (str): The file path of the music file to be analyzed.
+
+    Returns:
+        str: The detected genre of the music.
+    """
 
 if __name__ == "__main__":
     add_recommendations()
