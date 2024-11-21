@@ -1,11 +1,14 @@
 """
 This module implements a Flask-based web application for a music genre detector.
-It uses a pretrained music genre classification model called music_genre to detect the genre of the input music.
+It uses a pretrained music genre classification model called music_genre to detect 
+the genre of the input music.
 It categorizes music into the following categories:
 ['blues', 'classical', 'country', 'disco', 'hiphop', 'jazz', 'metal', 'pop', 'reggae', 'rock'].
 Link to the model: https://huggingface.co/ccmusic-database/music_genre.
-The application allows uploading an mp3 or wav file, as well as recording your own music via microphone.
-The application keeps track of your most recent uploads, statistics on what type of music you uploaded,
+The application allows uploading an mp3 or wav file, as well as recording your own music 
+via microphone.
+The application keeps track of your most recent uploads, statistics on what type of music 
+you uploaded,
 and a recommendation list generated based on the statistics.
 
 Author:
@@ -17,7 +20,8 @@ import ast
 import base64  # Moved import statement to the top
 
 from flask import Flask, render_template, request, redirect, url_for, flash
-from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from flask_login import LoginManager, UserMixin, login_user
+from flask_login import login_required, logout_user, current_user
 from pymongo import MongoClient
 from werkzeug.security import generate_password_hash, check_password_hash
 from bson import ObjectId
@@ -92,7 +96,7 @@ def home():
     recommendations = get_recommendations(genres)
     return render_template(
         'home.html', 
-        genres=genres, 
+        genres=genres,
         recommendations=recommendations
     )
 
@@ -144,7 +148,8 @@ def get_recommendations(genres):
             - "Amount" (int): The count of songs in this genre.
 
     Returns:
-        list: A list of dictionaries, where each dictionary represents a recommended song, containing:
+        list: A list of dictionaries, where each dictionary represents a 
+        recommended song, containing:
             - "Title" (str): The title of the song.
             - "Artist" (str): The artist of the song.
             - "Genre" (str): The genre of the song.
@@ -221,7 +226,7 @@ def register():
             return redirect(url_for('register'))
 
         hashed_password = generate_password_hash(
-            password1, 
+            password1,
             method='pbkdf2:sha256'
         )
 
@@ -289,7 +294,8 @@ def ini():
 
 def add_recommendations():
     """
-    Reads the contents of 'songs.txt', parses the data, and populates the MongoDB 'recommendations' collection.
+    Reads the contents of 'songs.txt', parses the data, and populates the MongoDB 
+    'recommendations' collection.
 
     Returns: 
         None
@@ -346,7 +352,7 @@ def upload():
 if __name__ == "__main__":
     add_recommendations()
     app.run(
-        host="0.0.0.0", 
-        port=5001, 
+        host="0.0.0.0",
+        port=5001,
         debug=True
     )
