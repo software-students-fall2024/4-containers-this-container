@@ -320,13 +320,13 @@ def upload():
     else:
         flash("No file uploaded or recorded audio received.")
         return redirect(url_for('home'))
-    
+
     response = requests.post(
         ML_CLIENT_URL,
         json={"audio": audio_data},
         timeout=30
     )
-    
+
     genre = response.json()["result"]
 
     cur_user_collection.insert_one({
